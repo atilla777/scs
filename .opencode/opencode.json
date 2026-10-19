@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agents": {
+    "standard": {
+      "description": "RIS: выбор фич, декомпозиция и координация задач",
+      "mode": "subagent",
+      "hidden": false,
+      "model": "openai/gpt-6-luna"
+    },
+    "advanced": {
+      "description": "RIS: документы, проектирование, реализация и независимое ревью",
+      "mode": "subagent",
+      "hidden": false,
+      "model": "openai/gpt-6.1-sol"
+    }
+  }
+}

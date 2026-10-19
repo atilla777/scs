@@ -1,0 +1,27 @@
+version: 2
+sources:
+  rules: docs/rules/
+  product: docs/product/
+  specs: docs/specs/
+workspace:
+  tasks: .sdlc/tasks/
+  worktrees: .sdlc/worktrees/
+adapters:
+  tasks:
+    skill: ris-proj-adapter-beads-tasks
+execution:
+  roles:
+    project-initialization:
+      agent: advanced
+    feature-selection:
+      agent: standard
+    task-decomposition:
+      agent: standard
+    task-execution:
+      agent: standard
+    feature-preparation:
+      agent: advanced
+    task-implementation:
+      agent: advanced
+    task-review:
+      agent: advanced
