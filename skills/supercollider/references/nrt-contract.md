@@ -2,7 +2,7 @@
 
 This task-branch implementation, pending integration and independent review,
 supports explicit external Buffer generations as well as empty resources.
-Agent Skills release remains separate. No fallback to source contract 1.
+See the package [entrypoint](../SKILL.md). No fallback to source contract 1.
 
 A trusted `.scd` evaluates to one Function. It synchronously receives context
 and returns a Dictionary/Event with `contract: "scs-nrt-source/2"`, a native

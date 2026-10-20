@@ -1,7 +1,7 @@
 # Render CLI — verified initial Buffer state
 
 These instructions accompany the task-branch implementation, pending integration.
-Only `render` is implemented; Agent Skills packaging is a later task.
+Only `render` is implemented. Start with the package [entrypoint](../SKILL.md).
 
 From any working directory (replace paths with your own):
 

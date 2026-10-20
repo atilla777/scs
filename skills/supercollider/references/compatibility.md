@@ -61,10 +61,39 @@ code; do not process untrusted programs under a supposed sandbox guarantee.
 
 ## Checks from repository root
 
+Obtain an identified repository revision (record `git rev-parse HEAD` and any
+local patch), or retain a content/mode manifest for a copied package. There is
+no build step, virtualenv, pip dependency or lockfile to resolve. On Arch,
+read-only `pacman -Qi python supercollider libsndfile` records installed versions,
+origins, licenses and validation metadata. On another distribution use its
+read-only package metadata; matching version strings alone do not establish
+support. If components are missing, stop and agree a separate installation
+plan using trusted distribution/upstream sources; do not install during render.
+For runtime use, keep the entire `supercollider/` folder together, with scripts,
+references and assets; no repository-root config or hooks are consulted.
+The included [MIT license](../LICENSE) covers this package and its original
+fixtures, and must accompany copies; external SC/system libraries retain their
+own licenses and are not bundled.
+
 ```sh
 python3 -B -m unittest discover -s tests/unit -v
 python3 -B -m unittest discover -s tests/contract -v
-SCS_REAL_TESTS=1 python3 -B -m unittest discover -s tests/integration -v
+```
+
+Before opting into native integration, check the runner below is available and
+really has distinct PID/network namespaces, no GUI env, no visible realtime
+server, empty audio devices and no external route. Do not use an inherited
+desktop/audio environment or bypass a failed isolation prerequisite. Use a
+fresh caller-owned directory for HOME/XDG/TMP and optional retained evidence;
+create its subdirectories before this command. Replace `/owned/check/` paths:
+
+```sh
+env -i PATH=/usr/bin:/bin LANG=C.UTF-8 \
+  HOME=/owned/check/home XDG_CONFIG_HOME=/owned/check/config \
+  XDG_DATA_HOME=/owned/check/data XDG_CACHE_HOME=/owned/check/cache \
+  XDG_RUNTIME_DIR=/owned/check/runtime TMPDIR=/owned/check/tmp \
+  SCS_EVIDENCE_DIR=/owned/check/evidence SCS_REAL_TESTS=1 \
+  python3 -B -m unittest discover -s tests/integration -v
 ```
 
 The real integration test additionally uses an **already available** `bwrap`
@@ -100,6 +129,9 @@ them. Set `SCS_EVIDENCE_DIR` to a caller-owned directory to retain per-run
 contract-matrix and real-SC diagnostics (including JSON and separate streams).
 Evidence copies preserve original temporary paths; those paths may no longer
 exist after the test, so inspect the retained run-ID directory instead.
-Feature-wide headless certification and harness testing remain later scope.
+The suites exercise actual small native renders in the declared profile;
+full feature acceptance additionally requires AC-016's separately agreed
+Agent Skills harness scenario. Static metadata/link checks do not prove that
+behavior. No harness run or full feature acceptance is claimed here.
 The actual 1000-second high-rate render was not authorized/run; only its pure
 timing oracle is checked. No Agent Skills harness cost/behavior claim is made.
