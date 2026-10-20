@@ -5,18 +5,24 @@ rendering: explicit NRT source → verified PCM16 WAV and structured diagnostics
 
 ## Status
 
-**Alpha render-only source package.** This branch adds the skill entrypoint to
-the implemented NRT CLI; integration and independent review are pending.
-Full feature acceptance is not claimed: the separately authorized Agent Skills
-harness scenario (AC-016) remains unverified.
+**Alpha render-only source package.** Small native NRT checks and one explicitly
+activated Agent Skills smoke passed in the recorded Linux environment. OpenCode
+v2.0.32 loaded the skill through its native `skill` tool and the agent rendered
+the packaged two-second example. This is not a reliability, autonomous-routing
+or cross-client support claim. Full feature acceptance is not claimed; the real
+1000-second high-rate render remains NOT RUN. See the compact
+[verification record](docs/specs/nrt-render/verification.md) for revisions,
+commands, cases and limits. These evidence/documentation updates await combined
+independent review and user publication.
 
 ## Use
 
 Obtain this repository at an identified revision, or copy the complete
 [`skills/supercollider/`](skills/supercollider/SKILL.md) folder unchanged to a
 location your Agent Skills-compatible harness can discover. No build or Python
-package installation is required; harness discovery is client-specific and is
-not asserted tested. Start with **[SKILL.md](skills/supercollider/SKILL.md)**.
+package installation is required; harness discovery is client-specific. One
+OpenCode explicit-activation scenario was observed, not every discovery/routing
+path. Start with **[SKILL.md](skills/supercollider/SKILL.md)**.
 
 The CLI can also be invoked directly from any cwd:
 

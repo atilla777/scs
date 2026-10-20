@@ -1,6 +1,8 @@
 # Compatibility and reproducible checks
 
-Task-branch baseline, pending integration and independent review. Runtime code
+Alpha render-only package. Small native checks and one explicitly activated
+Agent Skills smoke were observed in the profile below; these documentation
+updates await combined independent review and user publication. Runtime code
 uses Python stdlib only; no package manager/network/install/config operation
 occurs during render. External programs are not bundled or implementation-copied.
 No plotting libraries, Quarks, FFmpeg or mandatory container dependency.
@@ -129,9 +131,44 @@ them. Set `SCS_EVIDENCE_DIR` to a caller-owned directory to retain per-run
 contract-matrix and real-SC diagnostics (including JSON and separate streams).
 Evidence copies preserve original temporary paths; those paths may no longer
 exist after the test, so inspect the retained run-ID directory instead.
-The suites exercise actual small native renders in the declared profile;
-full feature acceptance additionally requires AC-016's separately agreed
-Agent Skills harness scenario. Static metadata/link checks do not prove that
-behavior. No harness run or full feature acceptance is claimed here.
-The actual 1000-second high-rate render was not authorized/run; only its pure
-timing oracle is checked. No Agent Skills harness cost/behavior claim is made.
+The suites exercise actual small native renders in the declared profile.
+The actual 1000-second high-rate render remains **NOT RUN / UNVERIFIED**;
+only its pure timing oracle is checked. Full feature acceptance is not claimed.
+
+## Observed Agent Skills smoke (2026-10-20)
+
+One separately authorized explicit-activation scenario passed with **OpenCode
+v2.0.32**, native `skill({"id":"supercollider"})`, build agent and CLI default
+model **opencode/minimax-m3.1-flash-free** (no model switch). A clean test copy
+contained this complete skill folder under `.opencode/skills/supercollider/`.
+The agent loaded the skill, read its references and fixture, then invoked one
+2s/48000/stereo/seed-0 render with timeout 60 through an evidence-only isolation
+prefix. Total harness time was 50.175 seconds, below the agreed 300-second limit;
+there was no second render, hook, music skill, Remotion or installation.
+
+SC execution had private network/PID namespaces, private proc/dev without audio,
+read-only host and caller-owned writable output/HOME/XDG/TMP. The namespace
+witness found no GUI session, realtime SC process or external route. The LLM
+provider used its ordinary network connection: an offline LLM is **not** claimed.
+The CLI returned success/complete/exit 0 with one ready artifact and no errors or
+unfinished actions. Independent full WAV decoding measured PCM16, 96064 frames,
+48000 Hz and 2 channels; the documented RMS/projection oracles passed.
+
+The WAV **file** SHA-256 was
+`eb803d72c59dea95c8dd4b11bb2f7f5ec735f4768d73de4ec3acb68dfdeef552`.
+The decoded **PCM payload** SHA-256 was
+`d0c3d295066a8c234c0a3d6d2be1adc397fd30863536efd3ab34231ec21f03e5`.
+The test agent incorrectly called the first value a PCM hash in its prose;
+these are distinct measurements, not a new cross-platform bitwise oracle.
+Four known nonfatal scheduling-priority warnings were retained. Three unrelated
+`ls` attempts were denied by test permissions and did not execute. Therefore
+this observation does not establish flawless instruction following, autonomous
+routing, repeatability, general model reliability or all-client compatibility.
+
+The smoke exercised repository revision
+`539b66723fee1d37b0e4d1eb3b0648e5f82eefb7` before this factual documentation
+update. Runtime, SKILL entrypoint and fixture are unchanged; no new live-agent
+run is inferred for changed documentation bytes. When obtained as a repository,
+see `docs/specs/nrt-render/verification.md` for the compact revision-bound record
+and reproduction procedure. That project report is not a runtime requirement:
+this whole skill folder remains independently copyable.
