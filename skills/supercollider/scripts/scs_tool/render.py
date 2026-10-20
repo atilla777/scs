@@ -67,6 +67,7 @@ def execute(argv, cancelled=lambda: None):
     directory = work = stage_dir = staging = owner = parent_fd = None
     deadline = time.monotonic() + 120
     published = verified = False
+    plan = None
 
     def checkpoint():
         signum = cancelled()
@@ -76,6 +77,10 @@ def execute(argv, cancelled=lambda: None):
             raise TimeoutError("Overall render deadline exceeded")
 
     def fail(code, exit_code, message, details=None, failure_stage=None):
+        result["artifacts"]["partial"].extend(
+            {**a, "reason": "published_not_ready"} for a in result["artifacts"]["ready"]
+        )
+        result["artifacts"]["ready"] = []
         result["errors"].append(
             dict(
                 code=code,
@@ -94,6 +99,19 @@ def execute(argv, cancelled=lambda: None):
             if exit_code in (130, 143)
             else "error"
         )
+
+    def observe_final_cancellation():
+        # Do not interrupt mandatory cleanup or override a prior cleanup failure.
+        signum = cancelled()
+        if signum and result["status"] == "success":
+            fail(
+                "cancelled",
+                128 + signum,
+                "Cancelled during finalization",
+                failure_stage="cleanup",
+            )
+            return True
+        return False
 
     started = time.monotonic()
     try:
@@ -186,7 +204,7 @@ def execute(argv, cancelled=lambda: None):
         result["resource_evidence"] = dict(
             dependency_coverage="trusted-declared",
             dependencies_inferred=False,
-            generations=0,
+            generations=plan["generations"],
             verified_generations=0,
             manifest=str(directory / "resources.json"),
         )
@@ -199,8 +217,13 @@ def execute(argv, cancelled=lambda: None):
         )
         stage = "resources"
         checkpoint()
-        if plan["generations"] != 0 or plan["verified_generations"] != 0:
-            raise sc.Failure("source_contract", 2, "Resource scope changed")
+        try:
+            sc.verify_resources(plan, checkpoint)
+        finally:
+            result["resource_evidence"]["verified_generations"] = plan[
+                "verified_generations"
+            ]
+            files.write_json(directory / "resources.json", plan)
         stage = "audio"
         try:
             measured = read_wav(staging, checkpoint)
@@ -285,13 +308,7 @@ def execute(argv, cancelled=lambda: None):
             )
         if parent_fd is not None:
             os.close(parent_fd)
-        if cancelled() and result["status"] == "success":
-            fail(
-                "cancelled",
-                128 + cancelled(),
-                "Cancelled during finalization",
-                failure_stage="cleanup",
-            )
+        observe_final_cancellation()
         if published:
             artifact = dict(
                 path=request["output"],
@@ -318,6 +335,55 @@ def execute(argv, cancelled=lambda: None):
             )
         if directory is not None:
             try:
+                if plan is not None:
+                    for g in plan["resources"]:
+                        for role in ("canonical", "reference", "snapshot"):
+                            path = Path(g["prepared"][role])
+                            if result["status"] == "success":
+                                try:
+                                    path.unlink(missing_ok=True)
+                                    g["retention"][role] = "removed"
+                                except OSError as exc:
+                                    g["retention"][role] = "cleanup_failed"
+                                    action = dict(
+                                        action="remove_owned_file", path=str(path)
+                                    )
+                                    result["unfinished_actions"].append(action)
+                                    fail(
+                                        "cleanup_failed",
+                                        25,
+                                        str(exc),
+                                        action,
+                                        "cleanup",
+                                    )
+                            else:
+                                g["retention"][role] = (
+                                    "retained" if path.exists() else "absent"
+                                )
+                        if "input" in g:
+                            path = Path(g["input"]["staged"])
+                            if result["status"] == "success":
+                                try:
+                                    path.unlink(missing_ok=True)
+                                    g["input"]["retention"] = "removed"
+                                except OSError as exc:
+                                    g["input"]["retention"] = "cleanup_failed"
+                                    action = dict(
+                                        action="remove_owned_file", path=str(path)
+                                    )
+                                    result["unfinished_actions"].append(action)
+                                    fail(
+                                        "cleanup_failed",
+                                        25,
+                                        str(exc),
+                                        action,
+                                        "cleanup",
+                                    )
+                            else:
+                                g["input"]["retention"] = (
+                                    "retained" if path.exists() else "absent"
+                                )
+                    files.write_json(directory / "resources.json", plan)
                 files.write_json(
                     directory / "files.json",
                     dict(
@@ -339,7 +405,11 @@ def execute(argv, cancelled=lambda: None):
                         files=[str(p) for p in directory.iterdir()],
                     ),
                 )
+                observe_final_cancellation()
                 files.write_json(directory / "result.json", result)
+                # A signal may also arrive while the result itself is saved.
+                if observe_final_cancellation():
+                    files.write_json(directory / "result.json", result)
             except Exception as exc:
                 result["artifacts"]["partial"].extend(
                     {**a, "reason": "published_not_ready"}

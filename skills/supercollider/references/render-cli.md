@@ -1,4 +1,4 @@
-# Render CLI — empty-resource baseline
+# Render CLI — verified initial Buffer state
 
 These instructions accompany the task-branch implementation, pending integration.
 Only `render` is implemented; Agent Skills packaging is a later task.
@@ -48,7 +48,8 @@ with `exit_code`. Unknown properties are null.
 Only `artifacts.ready` denotes a ready result. An exit code, PREPARED record,
 file existence or suitable header alone is not success. Success requires
 confirmed source/Score preparation, normal NRT completion, complete clean log
-evidence, explicit zero/zero resource evidence, full WAV decoding and matching
+evidence, matching initial state for every declared Buffer generation (explicit
+0/0 for empty resources), full WAV decoding and matching
 properties, owned-process cleanup, safe publication and file finalization.
 
 | Exit | Outcome |
@@ -57,7 +58,7 @@ properties, owned-process cleanup, safe publication and file finalization.
 | 2 | invalid input / unsupported source contract |
 | 3 | missing/non-executable dependency or unsupported environment |
 | 10 | sclang error / unconfirmed preparation |
-| 11 | NRT error / unknown substantial NRT diagnostic |
+| 11 | NRT error / unknown substantial diagnostic / missing, invalid or mismatching resource evidence |
 | 12 | absent, malformed or incomplete WAV |
 | 13 | valid WAV with mismatched rate/channels/frames |
 | 14 | file error / protected existing output |
@@ -72,6 +73,14 @@ reported. Files are private (0600). Select `--diagnostics-dir` for durable
 retention; system temp may be removed by the OS. Logs, status, source/final
 Score, source declarations, hashes, measurements, versions and file-role
 manifest are retained. Private HOME/XDG/TMPDIR work is disposable.
+The resource manifest records run/generation identity, block lifetimes,
+source/final Score and anchor hashes, expected/measured counts/sample hashes,
+comparison and retention state. Coverage is `trusted-declared`, never inferred.
+Large staged inputs/canonical/reference/snapshot files are removed on success;
+useful failure evidence is retained. Removal failures identify the exact owned
+path and unfinished action. Full canonical/reference checks precede NRT;
+same-NRT snapshot checks precede main WAV checks/publication. Resource I/O is
+covered by the same deadline, without an automatic timeout extension.
 On failure a useful partial WAV is retained in its private output-FS staging
 directory, never marked ready. If publication succeeded before cleanup failed
 or cancellation arrived, output is `published=true, verified=true` in partial,

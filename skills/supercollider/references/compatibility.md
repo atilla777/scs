@@ -23,6 +23,7 @@ formatter/linter/build backend/CI installation is claimed.
 
 Read-only local references used: installed `Score.sc`,
 `HelpSource/Classes/Score.schelp`, `Guides/Non-Realtime-Synthesis.schelp`,
+`Classes/SoundFile.schelp`, installed `SoundFile.sc`/`File.sc`,
 `Reference/Server-Command-Reference.schelp`,
 `Reference/Synth-Definition-File-Format.schelp`, and
 `/usr/share/doc/supercollider/README_LINUX.md` (standard offscreen operation).
@@ -79,8 +80,14 @@ on the same environment; no cross-platform bitwise promise.
 
 Contract tests isolate external executable behavior with small original fake
 SC processes plus independent binary fixtures. They do not certify the SC
-engine. Pure tests cover timing, binary boundaries, WAV decoding, no-replace
-publication and process cleanup. Complete failure/race/headless certification,
-external Buffer generations and harness testing remain later-task scope.
+engine. Pure tests cover timing, binary boundaries, full PCM16/float32 decoding,
+generation/use lifetimes, no-replace publication and process cleanup. Real
+resource tests use original nonuniform float32/PCM16 fixtures, file ranges and
+channel reorder/repetition, data/zero, scheduled bufnum reuse, native DSP mutation
+and actual server failure with a normal main WAV. Initial snapshots are compared
+completely; zero input does not prove internal call history. Contract tests model
+silent allocation failure without host OOM, missing/truncated/wrong/stale evidence,
+short preparation files and forbidden commands. Models do not certify SC behavior.
+Complete failure/race/headless certification and harness testing remain later scope.
 The actual 1000-second high-rate render was not authorized/run; only its pure
 timing oracle is checked. No Agent Skills harness cost/behavior claim is made.
