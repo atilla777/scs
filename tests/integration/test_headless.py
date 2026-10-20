@@ -3,6 +3,7 @@
 import json
 import math
 import os
+import shutil
 import struct
 import subprocess
 import sys
@@ -139,6 +140,11 @@ class HeadlessTests(unittest.TestCase):
         result = json.loads(process.stdout)
         self.assertEqual(process.returncode, result["exit_code"])
         self.assertEqual(process.stderr, "")
+        if os.environ.get("SCS_EVIDENCE_DIR"):
+            target = Path(os.environ["SCS_EVIDENCE_DIR"]) / result["run_id"]
+            shutil.copytree(result["diagnostics"]["directory"], target)
+            (target / "cli.stdout.json").write_text(process.stdout)
+            (target / "cli.stderr.log").write_text(process.stderr)
         return result
 
     def test_real_minimal_repeat_and_source_failures(self):

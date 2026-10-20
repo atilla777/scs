@@ -29,6 +29,17 @@ def float_wav(values, channels=2, rate=32000):
 
 
 class FloatResourceTests(unittest.TestCase):
+    def test_snapshot_deadline_is_not_invalid_audio(self):
+        with tempfile.TemporaryDirectory(dir="/tmp/opencode") as name:
+            snapshot = Path(name) / "snapshot.wav"
+            snapshot.write_bytes(float_wav((0.125, -0.25)))
+
+            def deadline():
+                raise TimeoutError("snapshot deadline exceeded")
+
+            with self.assertRaisesRegex(TimeoutError, "snapshot deadline"):
+                wav.read_buffer_snapshot(snapshot, deadline)
+
     def test_stable_input_read_may_update_atime(self):
         with tempfile.TemporaryDirectory() as name:
             root = Path(name)

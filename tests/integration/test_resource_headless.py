@@ -2,8 +2,8 @@
 
 import json
 import hashlib
+import math
 import os
-import shutil
 import struct
 import stat
 import tempfile
@@ -41,6 +41,37 @@ SOURCE = r"""{ |ctx|
     os.environ.get("SCS_REAL_TESTS") == "1", "explicit real SC test opt-in"
 )
 class ResourceHeadlessTests(unittest.TestCase):
+    def test_real_resource_fixed_seed_repeat(self):
+        with tempfile.TemporaryDirectory(
+            prefix="scs-resource-repeat-", dir="/tmp/opencode"
+        ) as name:
+            root = Path(name)
+            source = root / "repeat.scd"
+            source.write_text(SOURCE)
+            samples = []
+            for index in range(2):
+                output = root / f"repeat-{index}.wav"
+                result = self.invoke(source, output, root)
+                self.assertEqual(result["exit_code"], 0, result)
+                self.assertEqual(result["measured"]["frames"], 96064)
+                self.assertEqual(result["resource_evidence"]["verified_generations"], 2)
+                with wave.open(str(output), "rb") as audio:
+                    raw = audio.readframes(audio.getnframes())
+                samples.append([x[0] / 32768 for x in struct.iter_unpack("<h", raw)])
+            self.assertEqual(len(samples[0]), len(samples[1]))
+            rmse = math.sqrt(
+                sum((a - b) ** 2 for a, b in zip(*samples)) / len(samples[0])
+            )
+            self.assertLessEqual(rmse, 2 / 32768)
+            for channel in (0, 1):
+                rms = [
+                    math.sqrt(
+                        sum(x * x for x in values[channel::2]) / len(values[channel::2])
+                    )
+                    for values in samples
+                ]
+                self.assertLessEqual(abs(rms[0] - rms[1]), 1e-4)
+
     def test_real_same_timestamp_consumers_follow_initial_snapshots(self):
         with tempfile.TemporaryDirectory(
             prefix="scs-same-time-", dir="/tmp/opencode"
@@ -157,12 +188,7 @@ class ResourceHeadlessTests(unittest.TestCase):
                 self.assertFalse(g["comparison"]["subsequent_dsp_proven"])
                 self.assertFalse(g["comparison"]["internal_history_proven"])
 
-    def invoke(self, *args, **kwargs):
-        result = test_headless.HeadlessTests.invoke(self, *args, **kwargs)
-        if os.environ.get("SCS_EVIDENCE_DIR"):
-            target = Path(os.environ["SCS_EVIDENCE_DIR"]) / result["run_id"]
-            shutil.copytree(result["diagnostics"]["directory"], target)
-        return result
+    invoke = test_headless.HeadlessTests.invoke
 
     def test_real_file_range_channel_reorder_repeat(self):
         for selection in ([1, 0], [1, 0, 1]):

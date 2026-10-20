@@ -88,6 +88,18 @@ and actual server failure with a normal main WAV. Initial snapshots are compared
 completely; zero input does not prove internal call history. Contract tests model
 silent allocation failure without host OOM, missing/truncated/wrong/stale evidence,
 short preparation files and forbidden commands. Models do not certify SC behavior.
-Complete failure/race/headless certification and harness testing remain later scope.
+Integrated resilience checks exercise both empty and nonempty resource branches:
+stage-boundary faults and latched SIGINT/SIGTERM, deadlines inside Score,
+canonical/reference, snapshot and main-audio reads, publication/final-evidence
+failures, protected aliases, and concurrent empty/resource success plus NRT
+failure at one target. Process checks include detached descendants after leader
+exit, TERM-to-KILL escalation, foreign-control survival and both stream limits.
+Injected boundary faults/callbacks are contract models, not kernel/SC fault
+certification; actual subprocess signals/timeouts and real SC suites complement
+them. Set `SCS_EVIDENCE_DIR` to a caller-owned directory to retain per-run
+contract-matrix and real-SC diagnostics (including JSON and separate streams).
+Evidence copies preserve original temporary paths; those paths may no longer
+exist after the test, so inspect the retained run-ID directory instead.
+Feature-wide headless certification and harness testing remain later scope.
 The actual 1000-second high-rate render was not authorized/run; only its pure
 timing oracle is checked. No Agent Skills harness cost/behavior claim is made.

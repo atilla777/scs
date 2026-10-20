@@ -89,6 +89,8 @@ def read_wav(path, checkpoint=lambda: None):
                 decoded_samples=decoded,
                 sha256=digest.hexdigest(),
             )
+    except TimeoutError:
+        raise
     except (OSError, EOFError, wave.Error, struct.error) as exc:
         raise ValueError("Invalid or unavailable WAV: " + str(exc)) from exc
 
@@ -221,6 +223,8 @@ def read_buffer_snapshot(path, checkpoint=lambda: None):
         for _ in reader.blocks(checkpoint):
             pass
         return reader.measurement()
+    except TimeoutError:
+        raise
     except (OSError, struct.error) as exc:
         raise ValueError(
             "Invalid or unavailable float32 snapshot: " + str(exc)
@@ -253,6 +257,8 @@ def compare_resource_state(reference, snapshot, expected, checkpoint=lambda: Non
             internal_history_proven=False,
             subsequent_dsp_proven=False,
         )
+    except TimeoutError:
+        raise
     except (OSError, struct.error) as exc:
         raise ValueError(
             "Invalid or unavailable resource evidence: " + str(exc)

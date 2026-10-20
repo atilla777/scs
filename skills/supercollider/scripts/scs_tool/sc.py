@@ -46,6 +46,8 @@ def discover(request, owner, directory, env, deadline, checkpoint):
                 env,
                 checkpoint,
             )
+        except TimeoutError:
+            raise
         except OSError as exc:
             raise Failure("dependency_unexecutable", 3, str(exc)) from exc
         output = (
@@ -166,10 +168,14 @@ def prepare_score(
             request["sample_rate"],
             checkpoint,
         )
+    except TimeoutError:
+        raise
     except (ValueError, OSError) as exc:
         raise Failure("source_contract", 2, str(exc)) from exc
     try:
         read_canonical_resource(plan, manifest, directory, checkpoint)
+    except TimeoutError:
+        raise
     except (ValueError, OSError) as exc:
         plan.update(run_id=token, preparation_error=str(exc))
         write_json(directory / "resources.json", plan)
